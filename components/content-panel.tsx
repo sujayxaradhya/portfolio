@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/link-button";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { cn } from "@/lib/utils";
-import type { ProjectData, RoleData, LinksData, StopData, AboutData } from "@/lib/content";
+import type { ProjectData, RoleData, LinksData, StopData, AboutData, SkillsHeading } from "@/lib/content";
 
 type ContentPanelProps = {
   activeStop: number;
@@ -13,6 +13,7 @@ type ContentPanelProps = {
   projects: ProjectData[];
   experience: RoleData[];
   skills: Record<string, readonly string[]>;
+  skillsHeading: SkillsHeading;
   links: LinksData;
   about: AboutData;
   onNavigate: (n: number) => void;
@@ -197,6 +198,7 @@ export function ContentPanel({
   projects,
   experience,
   skills,
+  skillsHeading,
   links,
   about,
   onNavigate,
@@ -214,7 +216,7 @@ export function ContentPanel({
     const sectionEyebrows: Record<string, { title: string; eyebrow: string }> = {
       about: { title: "About", eyebrow: "A short note" },
       experience: { title: "Experience", eyebrow: "Where I've worked" },
-      skills: { title: "Skills", eyebrow: "What I work with" },
+      skills: { title: skillsHeading.title, eyebrow: skillsHeading.subtitle },
       contact: { title: "Contact", eyebrow: "Get in touch" },
     };
     const section = sectionEyebrows[stop.id];

@@ -11,9 +11,7 @@ import { useLiveContent } from "@/components/use-live-content";
 import type { SiteContent, StopData } from "@/lib/content";
 
 export function HomeClient(initial: SiteContent) {
-  // Start from the build-time content, then live-refresh from the Delivery API so
-  // dashboard edits appear within seconds without a rebuild.
-  const { stops, projects, experience, skills, links, about } = useLiveContent(initial);
+  const { stops, projects, experience, skills, skillsHeading, links, about } = useLiveContent(initial);
   const progressRef = useRef(0);
   const [activeStop, setActiveStop] = useState<number>(0);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
@@ -66,6 +64,7 @@ export function HomeClient(initial: SiteContent) {
           projects={projects}
           experience={experience}
           skills={skills}
+          skillsHeading={skillsHeading}
           links={links}
           about={about}
           onNavigate={scrollToStop}

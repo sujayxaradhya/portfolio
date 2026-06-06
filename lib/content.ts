@@ -41,6 +41,11 @@ export type AboutData = {
   paragraph_3: string;
 };
 
+export type SkillsHeading = {
+  title: string;
+  subtitle: string;
+};
+
 export type StopData = {
   id: string;
   label: string;
@@ -110,6 +115,7 @@ export type SiteContent = {
   projects: ProjectData[];
   experience: RoleData[];
   skills: Record<string, readonly string[]>;
+  skillsHeading: SkillsHeading;
   stops: StopData[];
 };
 
@@ -194,16 +200,21 @@ export async function fetchAllContent(
   }
 
   let skills: Record<string, readonly string[]> = {};
+  let skillsHeading: SkillsHeading = { title: "Skills", subtitle: "What I work with" };
   if (skillsEntry) {
     const cats = skillsEntry.fields.categories?.repeatable ?? [];
     for (const cat of cats) {
       skills[cat.category_name] = cat.skills ?? [];
     }
+    const heading = skillsEntry.fields.heading?.nonRepeatable;
+    if (heading) {
+      skillsHeading = { title: heading.title, subtitle: heading.subtitle ?? "" };
+    }
   }
 
   const stops = getStops(projects);
 
-  return { links, about, projects, experience, skills, stops };
+  return { links, about, projects, experience, skills, skillsHeading, stops };
 }
 
 export function getStops(projects: ProjectData[]): StopData[] {

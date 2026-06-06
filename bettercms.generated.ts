@@ -162,6 +162,15 @@ export interface SkillsFields {
       readonly skills?: string[];
     }>;
   };
+  /** Heading */
+  readonly heading?: {
+    readonly nonRepeatable?: {
+    /** Title */
+    readonly title: string;
+    /** Subtitle */
+    readonly subtitle?: string;
+    };
+  };
 }
 /**
  * Registry mapping each model slug to its typed fields. The Next adapter uses this to
