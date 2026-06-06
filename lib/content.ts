@@ -49,10 +49,27 @@ export type StopData = {
   project?: ProjectData;
 };
 
+/** Flatten a Lexical EditorState (a richtext `value`) to plain text: concatenate
+ *  text nodes, ending each block-level node with a newline. */
+function lexicalToPlainText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const n = node as { root?: unknown; type?: string; text?: string; children?: unknown[] };
+  if (n.root !== undefined) return lexicalToPlainText(n.root).trim();
+  const text = typeof n.text === "string" ? n.text : "";
+  const children = Array.isArray(n.children) ? n.children.map(lexicalToPlainText).join("") : "";
+  const isBlock = n.type === "paragraph" || n.type === "heading" || n.type === "quote" || n.type === "listitem";
+  return text + children + (isBlock ? "\n" : "");
+}
+
+/** A richtext field as PLAIN text for compact, unformatted UI (project cards).
+ *  Prefers the portable Lexical tree; falls back to stripping tags from the
+ *  rendered html. Never returns raw HTML — that would leak as escaped tags. */
 function richTextToPlain(rt: RichText | string | null | undefined): string {
   if (!rt) return "";
   if (typeof rt === "string") return rt;
-  if (rt.html) return rt.html;
+  const fromTree = lexicalToPlainText(rt.value);
+  if (fromTree) return fromTree;
+  if (rt.html) return rt.html.replace(/<[^>]+>/g, "").trim();
   return "";
 }
 
@@ -87,12 +104,31 @@ const FALLBACK_ABOUT: AboutData = {
     "Outside of work, I read too much, walk long distances, and keep a list of projects I'll probably never finish.",
 };
 
-export async function fetchAllContent() {
+export type SiteContent = {
+  links: LinksData;
+  about: AboutData;
+  projects: ProjectData[];
+  experience: RoleData[];
+  skills: Record<string, readonly string[]>;
+  stops: StopData[];
+};
+
+/**
+ * Fetch + map all site content. Defaults to the server client (build-time, cached).
+ * Pass `cmsPublic` + `{ fresh: true }` from the browser to bypass caches and read
+ * the latest published content for client-side live refresh (no rebuild needed).
+ */
+export async function fetchAllContent(
+  source: typeof cms = cms,
+  opts: { fresh?: boolean } = {},
+): Promise<SiteContent> {
+  // `revalidate: false` (no tags) makes the SDK issue a `cache: "no-store"` fetch.
+  const ro = opts.fresh ? ({ revalidate: false } as const) : undefined;
   const [homeEntry, projectsEntry, experienceEntry, skillsEntry] = await Promise.all([
-    cms.getEntry<HomeFields>("home").catch(() => null),
-    cms.getEntry<ProjectsFields>("projects").catch(() => null),
-    cms.getEntry<ExperienceFields>("experience").catch(() => null),
-    cms.getEntry<SkillsFields>("skills").catch(() => null),
+    source.getEntry<HomeFields>("home", ro).catch(() => null),
+    source.getEntry<ProjectsFields>("projects", ro).catch(() => null),
+    source.getEntry<ExperienceFields>("experience", ro).catch(() => null),
+    source.getEntry<SkillsFields>("skills", ro).catch(() => null),
   ]);
 
   let links: LinksData = FALLBACK_LINKS;

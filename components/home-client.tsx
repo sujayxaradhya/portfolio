@@ -7,18 +7,13 @@ import { OverlayNav } from "@/components/overlay-nav";
 import { ContentPanel } from "@/components/content-panel";
 import { HeroOverlay } from "@/components/hero-overlay";
 import { SectionNavDots } from "@/components/section-nav-dots";
-import type { ProjectData, RoleData, LinksData, StopData, AboutData } from "@/lib/content";
+import { useLiveContent } from "@/components/use-live-content";
+import type { SiteContent, StopData } from "@/lib/content";
 
-type HomeClientProps = {
-  stops: StopData[];
-  projects: ProjectData[];
-  experience: RoleData[];
-  skills: Record<string, readonly string[]>;
-  links: LinksData;
-  about: AboutData;
-};
-
-export function HomeClient({ stops, projects, experience, skills, links, about }: HomeClientProps) {
+export function HomeClient(initial: SiteContent) {
+  // Start from the build-time content, then live-refresh from the Delivery API so
+  // dashboard edits appear within seconds without a rebuild.
+  const { stops, projects, experience, skills, links, about } = useLiveContent(initial);
   const progressRef = useRef(0);
   const [activeStop, setActiveStop] = useState<number>(0);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
