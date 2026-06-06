@@ -49,10 +49,27 @@ export type StopData = {
   project?: ProjectData;
 };
 
+/** Flatten a Lexical EditorState (a richtext `value`) to plain text: concatenate
+ *  text nodes, ending each block-level node with a newline. */
+function lexicalToPlainText(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const n = node as { root?: unknown; type?: string; text?: string; children?: unknown[] };
+  if (n.root !== undefined) return lexicalToPlainText(n.root).trim();
+  const text = typeof n.text === "string" ? n.text : "";
+  const children = Array.isArray(n.children) ? n.children.map(lexicalToPlainText).join("") : "";
+  const isBlock = n.type === "paragraph" || n.type === "heading" || n.type === "quote" || n.type === "listitem";
+  return text + children + (isBlock ? "\n" : "");
+}
+
+/** A richtext field as PLAIN text for compact, unformatted UI (project cards).
+ *  Prefers the portable Lexical tree; falls back to stripping tags from the
+ *  rendered html. Never returns raw HTML — that would leak as escaped tags. */
 function richTextToPlain(rt: RichText | string | null | undefined): string {
   if (!rt) return "";
   if (typeof rt === "string") return rt;
-  if (rt.html) return rt.html;
+  const fromTree = lexicalToPlainText(rt.value);
+  if (fromTree) return fromTree;
+  if (rt.html) return rt.html.replace(/<[^>]+>/g, "").trim();
   return "";
 }
 
