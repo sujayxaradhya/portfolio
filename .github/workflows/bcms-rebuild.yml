@@ -105,7 +105,7 @@ jobs:
             fi
           fi
           if [ -z "$BUILD_DIR" ]; then
-            echo "::error::no static HTML output found (searched: $CANDIDATES). If this is a Next.js app, set output:'export' in next.config so it emits static HTML to out/ (and images.unoptimized:true); otherwise set the BCMS_BUILD_DIR repository variable. A server framework with no static export can't be hosted here."; exit 1
+            echo "::error::no static HTML output found (searched: $CANDIDATES). If this is a Next.js app: set output:'export' + images.unoptimized:true in next.config, and on Next.js 16+ build with 'next build --webpack' (the default Turbopack build skips static export, so no out/ is written); every page must be static (no 'force-dynamic'/server-only features). Otherwise set the BCMS_BUILD_DIR repository variable. A server framework with no static export can't be hosted here."; exit 1
           fi
           echo "packaging build dir: $BUILD_DIR"
           TARBALL="$RUNNER_TEMP/bcms-artifact.tgz"
