@@ -104,12 +104,31 @@ const FALLBACK_ABOUT: AboutData = {
     "Outside of work, I read too much, walk long distances, and keep a list of projects I'll probably never finish.",
 };
 
-export async function fetchAllContent() {
+export type SiteContent = {
+  links: LinksData;
+  about: AboutData;
+  projects: ProjectData[];
+  experience: RoleData[];
+  skills: Record<string, readonly string[]>;
+  stops: StopData[];
+};
+
+/**
+ * Fetch + map all site content. Defaults to the server client (build-time, cached).
+ * Pass `cmsPublic` + `{ fresh: true }` from the browser to bypass caches and read
+ * the latest published content for client-side live refresh (no rebuild needed).
+ */
+export async function fetchAllContent(
+  source: typeof cms = cms,
+  opts: { fresh?: boolean } = {},
+): Promise<SiteContent> {
+  // `revalidate: false` (no tags) makes the SDK issue a `cache: "no-store"` fetch.
+  const ro = opts.fresh ? ({ revalidate: false } as const) : undefined;
   const [homeEntry, projectsEntry, experienceEntry, skillsEntry] = await Promise.all([
-    cms.getEntry<HomeFields>("home").catch(() => null),
-    cms.getEntry<ProjectsFields>("projects").catch(() => null),
-    cms.getEntry<ExperienceFields>("experience").catch(() => null),
-    cms.getEntry<SkillsFields>("skills").catch(() => null),
+    source.getEntry<HomeFields>("home", ro).catch(() => null),
+    source.getEntry<ProjectsFields>("projects", ro).catch(() => null),
+    source.getEntry<ExperienceFields>("experience", ro).catch(() => null),
+    source.getEntry<SkillsFields>("skills", ro).catch(() => null),
   ]);
 
   let links: LinksData = FALLBACK_LINKS;
