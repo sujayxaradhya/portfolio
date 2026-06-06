@@ -22,7 +22,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
+          # No 'cache:' here — it would hard-require a package-lock.json/yarn.lock and
+          # fail any bun/pnpm project. Each package manager handles its own caching.
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Fetch CMS content (build-time injection)
         env:
@@ -37,8 +41,30 @@ jobs:
 
       - name: Install & build
         run: |
-          npm ci
-          npm run build
+          # Detect the package manager from the committed lockfile so bun, pnpm, yarn
+          # and npm projects all build — no assumption of a package-lock.json.
+          corepack enable || true
+          if [ -f bun.lock ] || [ -f bun.lockb ]; then
+            echo "Detected Bun (bun.lock)"
+            bun install
+            bun run build
+          elif [ -f pnpm-lock.yaml ]; then
+            echo "Detected pnpm (pnpm-lock.yaml)"
+            pnpm install
+            pnpm run build
+          elif [ -f yarn.lock ]; then
+            echo "Detected Yarn (yarn.lock)"
+            yarn install
+            yarn build
+          elif [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            echo "Detected npm (lockfile)"
+            npm ci || npm install
+            npm run build
+          else
+            echo "No lockfile detected — falling back to npm install"
+            npm install
+            npm run build
+          fi
 
       - name: Package, checksum & upload artifact
         env:
@@ -46,16 +72,37 @@ jobs:
           API_KEY: ${{ secrets.BCMS_API_KEY }}
           PROJECT_ID: ${{ vars.BCMS_PROJECT_ID }}
           SHA: ${{ github.event.client_payload.sha || github.sha }}
+          # Optional escape hatch (Vercel "Output Directory" setting). Set the
+          # BCMS_BUILD_DIR repo variable to force a dir; unset → auto-detect below.
+          BUILD_DIR_OVERRIDE: ${{ vars.BCMS_BUILD_DIR }}
         run: |
           set -euo pipefail
-          # Auto-detect the static build output (Vite/Astro → dist, CRA → build,
-          # Next static export → out). Picks the first non-empty match.
+          # Resolve the static build output to package. An explicit override wins;
+          # otherwise scan the conventional output dirs of the common static
+          # generators (Vite/Astro/Vue → dist, CRA/SvelteKit-static/Docusaurus →
+          # build, Next export → out, Gatsby/Hugo/VuePress → public, Eleventy/Jekyll
+          # → _site, Nuxt 3 → .output/public), preferring one with an index.html.
+          CANDIDATES="dist build out public _site .output/public"
           BUILD_DIR=""
-          for d in dist build out; do
-            if [ -d "$d" ] && [ -n "$(ls -A "$d" 2>/dev/null)" ]; then BUILD_DIR="$d"; break; fi
-          done
+          if [ -n "${BUILD_DIR_OVERRIDE:-}" ]; then
+            BUILD_DIR="$BUILD_DIR_OVERRIDE"
+            if [ ! -d "$BUILD_DIR" ]; then
+              echo "::error::configured BCMS_BUILD_DIR '$BUILD_DIR' not found after build"; exit 1
+            fi
+          else
+            for d in $CANDIDATES; do
+              if [ -d "$d" ] && [ -f "$d/index.html" ]; then BUILD_DIR="$d"; break; fi
+            done
+            # No index.html anywhere? Fall back to the first non-empty candidate
+            # (covers SPAs / sites whose entry isn't a root index.html).
+            if [ -z "$BUILD_DIR" ]; then
+              for d in $CANDIDATES; do
+                if [ -d "$d" ] && [ -n "$(ls -A "$d" 2>/dev/null)" ]; then BUILD_DIR="$d"; break; fi
+              done
+            fi
+          fi
           if [ -z "$BUILD_DIR" ]; then
-            echo "::error::no static build output found (looked for dist/, build/, out/). A server framework (e.g. Next.js without 'output: export') produces no static site and can't be hosted here."; exit 1
+            echo "::error::no static build output found (searched: $CANDIDATES). Set the BCMS_BUILD_DIR repository variable if your build outputs elsewhere. A server framework (e.g. Next.js without 'output: export') produces no static site and can't be hosted here."; exit 1
           fi
           echo "packaging build dir: $BUILD_DIR"
           TARBALL="$RUNNER_TEMP/bcms-artifact.tgz"
