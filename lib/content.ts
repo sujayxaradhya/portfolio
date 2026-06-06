@@ -21,11 +21,6 @@ export type RoleData = {
   scope: string;
 };
 
-export type SkillCategoryData = {
-  category_name: string;
-  skills: readonly string[];
-};
-
 export type LinksData = {
   name: string;
   role: string;
@@ -69,95 +64,110 @@ const HOME_STOPS: { id: string; label: string; lat: number; lng: number }[] = [
   { id: "contact", label: "Contact", lat: -23.55, lng: -46.63 },
 ];
 
-export async function getHome(): Promise<LinksData | null> {
-  try {
-    const entry = await cms.getEntry<HomeFields>("home");
-    if (!entry) return null;
-    const f = entry.fields;
-    return {
-      name: f.name,
-      role: f.role,
-      tagline: f.tagline,
-      location: f.location,
-      timezone: f.timezone,
-      status: f.status,
-      email: f.email ?? f.about?.paragraph_1 ?? "",
-      github: f.github,
-      linkedin: f.linkedin,
-      x: f.x,
-      website: f.website,
-    };
-  } catch {
-    return null;
-  }
-}
+const FALLBACK_LINKS: LinksData = {
+  name: "Sujay Shukla",
+  role: "Software Engineer",
+  tagline: "I build small, durable tools for the web.",
+  location: "Bengaluru, IN",
+  timezone: "IST (UTC+5:30)",
+  status: "Open to interesting work",
+  email: "hello@example.com",
+  github: "https://github.com/example",
+  linkedin: "https://linkedin.com/in/example",
+  x: "https://x.com/example",
+  website: "https://example.com",
+};
 
-export async function getAbout(): Promise<AboutData | null> {
-  try {
-    const entry = await cms.getEntry<HomeFields>("home");
-    if (!entry) return null;
-    const about = entry.fields.about;
-    if (!about) return null;
-    return {
-      paragraph_1: about.paragraph_1,
-      paragraph_2: about.paragraph_2,
-      paragraph_3: about.paragraph_3,
-    };
-  } catch {
-    return null;
-  }
-}
+const FALLBACK_ABOUT: AboutData = {
+  paragraph_1:
+    "I'm a software engineer who likes working on small, durable things — the kind of software you can leave for six months and come back to without dread. Most of my work sits somewhere between the front-end and the database.",
+  paragraph_2:
+    "Lately I've been drawn to single-user tools, static sites, and quiet interfaces. I like the web when it loads quickly, reads clearly, and stays out of the way.",
+  paragraph_3:
+    "Outside of work, I read too much, walk long distances, and keep a list of projects I'll probably never finish.",
+};
 
-export async function getProjects(): Promise<ProjectData[]> {
-  try {
-    const res = await cms.listEntries<ProjectsFields>("projects", { perPage: 100 });
-    return res.items.map((entry) => {
-      const f = entry.fields;
-      return {
-        title: f.title,
-        year: f.year,
-        place: f.place,
-        lat: f.lat,
-        lng: f.lng,
-        stack: f.stack,
-        description: richTextToPlain(f.description),
-        href: f.href || undefined,
-        repo: f.repo || undefined,
+export async function fetchAllContent() {
+  const [homeEntry, projectsEntry, experienceEntry, skillsEntry] = await Promise.all([
+    cms.getEntry<HomeFields>("home").catch(() => null),
+    cms.getEntry<ProjectsFields>("projects").catch(() => null),
+    cms.getEntry<ExperienceFields>("experience").catch(() => null),
+    cms.getEntry<SkillsFields>("skills").catch(() => null),
+  ]);
+
+  let links: LinksData = FALLBACK_LINKS;
+  let about: AboutData = FALLBACK_ABOUT;
+
+  if (homeEntry) {
+    const f = homeEntry.fields;
+    const identity = f.identity?.nonRepeatable;
+    const aboutZone = f.about?.nonRepeatable;
+    const contact = f.contact?.nonRepeatable;
+
+    if (identity) {
+      links = {
+        name: identity.name ?? FALLBACK_LINKS.name,
+        role: identity.role ?? FALLBACK_LINKS.role,
+        tagline: identity.tagline ?? FALLBACK_LINKS.tagline,
+        location: identity.location ?? FALLBACK_LINKS.location,
+        timezone: identity.timezone ?? FALLBACK_LINKS.timezone,
+        status: identity.status ?? FALLBACK_LINKS.status,
+        email: contact?.email ?? FALLBACK_LINKS.email,
+        github: contact?.github ?? FALLBACK_LINKS.github,
+        linkedin: contact?.linkedin ?? FALLBACK_LINKS.linkedin,
+        x: contact?.x ?? FALLBACK_LINKS.x,
+        website: contact?.website ?? FALLBACK_LINKS.website,
       };
-    });
-  } catch {
-    return [];
-  }
-}
+    }
 
-export async function getExperience(): Promise<RoleData[]> {
-  try {
-    const entry = await cms.getEntry<ExperienceFields>("experience");
-    if (!entry) return [];
-    return entry.fields.roles.map((r) => ({
+    if (aboutZone?.paragraph_1) {
+      about = {
+        paragraph_1: aboutZone.paragraph_1,
+        paragraph_2: aboutZone.paragraph_2 ?? "",
+        paragraph_3: aboutZone.paragraph_3 ?? "",
+      };
+    }
+  }
+
+  let projects: ProjectData[] = [];
+  if (projectsEntry) {
+    const items = projectsEntry.fields.projects?.repeatable ?? [];
+    projects = items.map((p) => ({
+      title: p.title,
+      year: p.year ?? "",
+      place: p.place ?? "",
+      lat: p.lat ?? 0,
+      lng: p.lng ?? 0,
+      stack: p.stack ?? [],
+      description: richTextToPlain(p.description),
+      href: p.href || undefined,
+      repo: p.repo || undefined,
+    }));
+  }
+
+  let experience: RoleData[] = [];
+  if (experienceEntry) {
+    const roles = experienceEntry.fields.roles?.repeatable ?? [];
+    experience = roles.map((r) => ({
       role: r.role,
       company: r.company,
-      start: r.start,
-      end: r.end,
-      scope: r.scope,
+      start: r.start ?? "",
+      end: r.end ?? "",
+      scope: r.scope ?? "",
     }));
-  } catch {
-    return [];
   }
-}
 
-export async function getSkills(): Promise<Record<string, readonly string[]>> {
-  try {
-    const entry = await cms.getEntry<SkillsFields>("skills");
-    if (!entry) return {};
-    const result: Record<string, readonly string[]> = {};
-    for (const cat of entry.fields.categories) {
-      result[cat.category_name] = cat.skills;
+  let skills: Record<string, readonly string[]> = {};
+  if (skillsEntry) {
+    const cats = skillsEntry.fields.categories?.repeatable ?? [];
+    for (const cat of cats) {
+      skills[cat.category_name] = cat.skills ?? [];
     }
-    return result;
-  } catch {
-    return {};
   }
+
+  const stops = getStops(projects);
+
+  return { links, about, projects, experience, skills, stops };
 }
 
 export function getStops(projects: ProjectData[]): StopData[] {

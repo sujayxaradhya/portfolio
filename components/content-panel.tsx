@@ -5,10 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/link-button";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { cn } from "@/lib/utils";
-import type { ProjectData, RoleData, LinksData, StopData } from "@/lib/content";
-import type { HomeFields } from "@/bettercms.generated";
-
-type AboutData = HomeFields["about"];
+import type { ProjectData, RoleData, LinksData, StopData, AboutData } from "@/lib/content";
 
 type ContentPanelProps = {
   activeStop: number;

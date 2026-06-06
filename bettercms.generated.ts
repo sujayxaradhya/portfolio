@@ -46,82 +46,132 @@ export interface BetterCMSEntry<TFields> {
   readonly updatedAt: string;
 }
 
-// ---------------------------------------------------------------------------
-// Models
-// ---------------------------------------------------------------------------
-
-/** Home page — singleton */
-export interface HomeFields {
-  readonly name: string;
-  readonly role: string;
-  readonly tagline: string;
-  readonly location: string;
-  readonly timezone: string;
-  readonly status: string;
-  readonly email: string;
-  readonly github: string;
-  readonly linkedin: string;
-  readonly x: string;
-  readonly website: string;
-  readonly about: {
-    readonly paragraph_1: string;
-    readonly paragraph_2: string;
-    readonly paragraph_3: string;
-  };
-  readonly contact: {
-    readonly email_display: string;
-    readonly github_url: string;
-    readonly linkedin_url: string;
-    readonly x_url: string;
-    readonly website_url: string;
-  };
-}
-
-/** Projects — dynamic collection */
-export interface ProjectsFields {
-  readonly title: string;
-  readonly year: string;
-  readonly place: string;
-  readonly description: RichText;
-  readonly stack: readonly string[];
-  readonly href: string;
-  readonly repo: string;
-  readonly lat: number;
-  readonly lng: number;
-}
-
-/** Experience page — singleton */
+/**
+ * Experience
+ * Model slug: `experience`
+ */
 export interface ExperienceFields {
-  readonly roles: readonly {
+  /** Roles */
+  readonly roles?: {
+    readonly repeatable?: Array<{
+      /** Role */
+      readonly role: string;
+      /** Company */
+      readonly company: string;
+      /** Start */
+      readonly start?: string;
+      /** End */
+      readonly end?: string;
+      /** Scope */
+      readonly scope?: string;
+    }>;
+  };
+}
+
+/**
+ * Home
+ * Model slug: `home`
+ */
+export interface HomeFields {
+  /** Identity */
+  readonly identity?: {
+    readonly nonRepeatable?: {
+    /** Name */
+    readonly name: string;
+    /** Role */
     readonly role: string;
-    readonly company: string;
-    readonly start: string;
-    readonly end: string;
-    readonly scope: string;
-  }[];
+    /** Tagline */
+    readonly tagline?: string;
+    /** Location */
+    readonly location?: string;
+    /** Timezone */
+    readonly timezone?: string;
+    /** Status */
+    readonly status?: string;
+    };
+  };
+  /** About */
+  readonly about?: {
+    readonly nonRepeatable?: {
+    /** Paragraph 1 */
+    readonly paragraph_1?: string;
+    /** Paragraph 2 */
+    readonly paragraph_2?: string;
+    /** Paragraph 3 */
+    readonly paragraph_3?: string;
+    };
+  };
+  /** Contact */
+  readonly contact?: {
+    readonly nonRepeatable?: {
+    /** Email */
+    readonly email?: string;
+    /** GitHub URL */
+    readonly github?: string;
+    /** LinkedIn URL */
+    readonly linkedin?: string;
+    /** X/Twitter URL */
+    readonly x?: string;
+    /** Website URL */
+    readonly website?: string;
+    };
+  };
 }
 
-/** Skills page — singleton */
+/**
+ * Projects
+ * Model slug: `projects`
+ */
+export interface ProjectsFields {
+  /** Projects */
+  readonly projects?: {
+    readonly repeatable?: Array<{
+      /** Title */
+      readonly title: string;
+      /** Year */
+      readonly year?: string;
+      /** Place */
+      readonly place?: string;
+      /** Description */
+      readonly description?: RichText;
+      /** Latitude */
+      readonly lat?: number;
+      /** Longitude */
+      readonly lng?: number;
+      /** Live URL */
+      readonly href?: string;
+      /** Repo URL */
+      readonly repo?: string;
+      /** Stack */
+      readonly stack?: string[];
+    }>;
+  };
+}
+
+/**
+ * Skills
+ * Model slug: `skills`
+ */
 export interface SkillsFields {
-  readonly categories: readonly {
-    readonly category_name: string;
-    readonly skills: readonly string[];
-  }[];
+  /** Categories */
+  readonly categories?: {
+    readonly repeatable?: Array<{
+      /** Category Name */
+      readonly category_name: string;
+      /** Skills */
+      readonly skills?: string[];
+    }>;
+  };
 }
-
-// ---------------------------------------------------------------------------
-// Schema registry
-// ---------------------------------------------------------------------------
-
 /**
  * Registry mapping each model slug to its typed fields. The Next adapter uses this to
  * type `getEntry("blog", ...)` by slug — autocomplete and exhaustiveness for free.
  */
 export interface BetterCMSSchema {
-  home: HomeFields;
-  projects: ProjectsFields;
-  experience: ExperienceFields;
-  skills: SkillsFields;
+  readonly "experience": ExperienceFields;
+  readonly "home": HomeFields;
+  readonly "projects": ProjectsFields;
+  readonly "skills": SkillsFields;
 }
 
 /** Union of all model slugs. */

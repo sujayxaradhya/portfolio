@@ -24,18 +24,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://example.com"),
   title: {
-    default: "Your Name — Developer Portfolio",
-    template: "%s — Your Name",
+    default: "Sujay Shukla — Developer Portfolio",
+    template: "%s — Sujay Shukla",
   },
   description: "Selected work, experience, and contact information.",
   openGraph: {
-    title: "Your Name — Developer Portfolio",
+    title: "Sujay Shukla — Developer Portfolio",
     description: "Selected work, experience, and contact information.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Your Name — Developer Portfolio",
+    title: "Sujay Shukla — Developer Portfolio",
     description: "Selected work, experience, and contact information.",
   },
 };
