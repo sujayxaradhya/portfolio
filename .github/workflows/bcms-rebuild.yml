@@ -42,6 +42,10 @@ jobs:
       - name: Install & build
         env:
           BETTERCMS_API_KEY: ${{ secrets.BCMS_API_KEY }}
+          # Public, read-only delivery key for client-side live content (inlined into
+          # the browser bundle). MUST be a content:read (published-only) key — never the
+          # deploy key, which can write artifacts. Unset → live refresh no-ops safely.
+          NEXT_PUBLIC_BETTERCMS_API_KEY: ${{ secrets.BCMS_PUBLIC_API_KEY }}
         run: |
           # Detect the package manager from the committed lockfile so bun, pnpm, yarn
           # and npm projects all build — no assumption of a package-lock.json.
