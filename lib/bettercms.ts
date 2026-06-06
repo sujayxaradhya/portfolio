@@ -10,12 +10,13 @@ export const cms = createBetterCMS<Schema>({
   revalidate: 60,
 });
 
-/** Browser-safe client for live content refresh. Uses a PUBLIC, read-only delivery
- *  key (NEXT_PUBLIC_*, inlined into the client bundle) — safe because it can only
- *  read already-published content. Pair with `fetchAllContent(cmsPublic, { fresh: true })`
- *  to bypass caches and show dashboard edits within seconds, no rebuild. */
+/** Browser client for live content refresh. Published content is public (it's on
+ *  the live site), so this reads it KEYLESS — no API key, no repo secrets, nothing
+ *  to configure (the workspace slug is already public). The Delivery API returns
+ *  published-only without a key; drafts would need one, which we never read here.
+ *  Pair with `fetchAllContent(cmsPublic, { fresh: true })` to bypass caches and show
+ *  dashboard edits within seconds, no rebuild. */
 export const cmsPublic = createBetterCMS<Schema>({
   baseUrl: "https://api.bettercms.ai/api/v1/delivery",
   workspace: "sujay",
-  apiKey: process.env.NEXT_PUBLIC_BETTERCMS_API_KEY,
 });
