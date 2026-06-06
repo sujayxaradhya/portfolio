@@ -93,16 +93,19 @@ jobs:
             for d in $CANDIDATES; do
               if [ -d "$d" ] && [ -f "$d/index.html" ]; then BUILD_DIR="$d"; break; fi
             done
-            # No index.html anywhere? Fall back to the first non-empty candidate
-            # (covers SPAs / sites whose entry isn't a root index.html).
+            # No root index.html? Fall back to the first candidate that contains ANY
+            # .html file (multi-page exports without a root index.html). A dir with
+            # assets but no HTML — e.g. a Next.js public/ when the app was NOT statically
+            # exported — is not a site, so it's skipped and we fail loud below rather
+            # than publishing a 403 directory with no index.
             if [ -z "$BUILD_DIR" ]; then
               for d in $CANDIDATES; do
-                if [ -d "$d" ] && [ -n "$(ls -A "$d" 2>/dev/null)" ]; then BUILD_DIR="$d"; break; fi
+                if [ -d "$d" ] && [ -n "$(find "$d" -maxdepth 2 -name '*.html' -print -quit 2>/dev/null)" ]; then BUILD_DIR="$d"; break; fi
               done
             fi
           fi
           if [ -z "$BUILD_DIR" ]; then
-            echo "::error::no static build output found (searched: $CANDIDATES). Set the BCMS_BUILD_DIR repository variable if your build outputs elsewhere. A server framework (e.g. Next.js without 'output: export') produces no static site and can't be hosted here."; exit 1
+            echo "::error::no static HTML output found (searched: $CANDIDATES). If this is a Next.js app, set output:'export' in next.config so it emits static HTML to out/ (and images.unoptimized:true); otherwise set the BCMS_BUILD_DIR repository variable. A server framework with no static export can't be hosted here."; exit 1
           fi
           echo "packaging build dir: $BUILD_DIR"
           TARBALL="$RUNNER_TEMP/bcms-artifact.tgz"
