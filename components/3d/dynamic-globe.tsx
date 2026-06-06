@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import type { RefObject } from "react";
-import type { GlobeStop } from "@/data/stops";
+import type { StopData } from "@/lib/content";
 
 const Globe = dynamic(() => import("./globe").then((m) => m.Globe), {
   ssr: false,
@@ -69,9 +69,9 @@ function GlobeFallback() {
 }
 
 type Props = {
-  stops: GlobeStop[];
+  stops: StopData[];
   activeTitle: string | null;
-  onSelect: (stop: GlobeStop) => void;
+  onSelect: (stop: StopData) => void;
   progressRef: RefObject<number>;
   activeStop: number;
   totalStops: number;

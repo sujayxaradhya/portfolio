@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { links } from "@/data/links";
+import type { LinksData } from "@/lib/content";
 
 type HeroOverlayProps = {
   activeStop: number;
+  links: LinksData;
 };
 
-export function HeroOverlay({ activeStop }: HeroOverlayProps) {
+export function HeroOverlay({ activeStop, links }: HeroOverlayProps) {
   const isHero = activeStop === 0;
 
   return (

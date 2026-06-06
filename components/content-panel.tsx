@@ -5,27 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/link-button";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { cn } from "@/lib/utils";
-import type { Project } from "@/data/projects";
-import type { Role } from "@/data/experience";
-import type { Links } from "@/data/links";
+import type { ProjectData, RoleData, LinksData, StopData } from "@/lib/content";
+import type { HomeFields } from "@/bettercms.generated";
 
-type StopData = {
-  id: string;
-  label: string;
-  project?: Project;
-};
+type AboutData = HomeFields["about"];
 
 type ContentPanelProps = {
   activeStop: number;
   stops: readonly StopData[];
-  projects: Project[];
-  experience: Role[];
+  projects: ProjectData[];
+  experience: RoleData[];
   skills: Record<string, readonly string[]>;
-  links: Links;
+  links: LinksData;
+  about: AboutData;
   onNavigate: (n: number) => void;
 };
 
-function ProjectContent({ project }: { project: Project }) {
+function ProjectContent({ project }: { project: ProjectData }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
@@ -84,29 +80,17 @@ function ProjectContent({ project }: { project: Project }) {
   );
 }
 
-function AboutContent() {
+function AboutContent({ about }: { about: AboutData }) {
   return (
     <div className="flex flex-col gap-5 text-base leading-relaxed text-pretty text-foreground/85 md:text-lg">
-      <p>
-        I&apos;m a software engineer who likes working on small, durable
-        things — the kind of software you can leave for six months and come
-        back to without dread. Most of my work sits somewhere between the
-        front-end and the database.
-      </p>
-      <p>
-        Lately I&apos;ve been drawn to single-user tools, static sites, and
-        quiet interfaces. I like the web when it loads quickly, reads clearly,
-        and stays out of the way.
-      </p>
-      <p>
-        Outside of work, I read too much, walk long distances, and keep a
-        list of projects I&apos;ll probably never finish.
-      </p>
+      <p>{about.paragraph_1}</p>
+      <p>{about.paragraph_2}</p>
+      <p>{about.paragraph_3}</p>
     </div>
   );
 }
 
-function ExperienceContent({ experience }: { experience: Role[] }) {
+function ExperienceContent({ experience }: { experience: RoleData[] }) {
   return (
     <ol className="relative flex flex-col gap-0 border-l border-rule pl-6 md:pl-8">
       {experience.map((r) => (
@@ -162,7 +146,7 @@ function SkillsContent({ skills }: { skills: Record<string, readonly string[]> }
   );
 }
 
-function ContactContent({ links }: { links: Links }) {
+function ContactContent({ links }: { links: LinksData }) {
   const SOCIALS = [
     { label: "GitHub", href: links.github },
     { label: "LinkedIn", href: links.linkedin },
@@ -217,6 +201,7 @@ export function ContentPanel({
   experience,
   skills,
   links,
+  about,
   onNavigate,
 }: ContentPanelProps) {
   const stop = stops[activeStop];
@@ -224,30 +209,20 @@ export function ContentPanel({
 
   const getHeader = () => {
     if (!stop) return { index: "", title: "", eyebrow: "" };
-    switch (stop.id) {
-      case "atlas":
-        return { index: "01", title: "Atlas", eyebrow: "Bengaluru, IN" };
-      case "marginalia":
-        return { index: "02", title: "Marginalia", eyebrow: "San Francisco, US" };
-      case "field-notes":
-        return { index: "03", title: "Field Notes", eyebrow: "Berlin, DE" };
-      case "index":
-        return { index: "04", title: "Index", eyebrow: "Tokyo, JP" };
-      case "about":
-        return { index: "05", title: "About", eyebrow: "A short note" };
-      case "experience":
-        return {
-          index: "06",
-          title: "Experience",
-          eyebrow: "Where I've worked",
-        };
-      case "skills":
-        return { index: "07", title: "Skills", eyebrow: "What I work with" };
-      case "contact":
-        return { index: "08", title: "Contact", eyebrow: "Get in touch" };
-      default:
-        return { index: "", title: "", eyebrow: "" };
+    const num = activeStop.toString().padStart(2, "0");
+    const projectStop = projects.find((p) => stop.id === p.title.toLowerCase().replace(/\s+/g, "-"));
+    if (projectStop) {
+      return { index: num, title: projectStop.title, eyebrow: projectStop.place };
     }
+    const sectionEyebrows: Record<string, { title: string; eyebrow: string }> = {
+      about: { title: "About", eyebrow: "A short note" },
+      experience: { title: "Experience", eyebrow: "Where I've worked" },
+      skills: { title: "Skills", eyebrow: "What I work with" },
+      contact: { title: "Contact", eyebrow: "Get in touch" },
+    };
+    const section = sectionEyebrows[stop.id];
+    if (section) return { index: num, ...section };
+    return { index: num, title: stop.label, eyebrow: "" };
   };
 
   const header = getHeader();
@@ -295,19 +270,10 @@ export function ContentPanel({
         </header>
 
         <div className="mt-6 flex flex-col gap-6">
-          {stop?.id === "atlas" && (
-            <ProjectContent project={projects[0]} />
+          {stop?.project && (
+            <ProjectContent project={stop.project} />
           )}
-          {stop?.id === "marginalia" && (
-            <ProjectContent project={projects[1]} />
-          )}
-          {stop?.id === "field-notes" && (
-            <ProjectContent project={projects[2]} />
-          )}
-          {stop?.id === "index" && (
-            <ProjectContent project={projects[3]} />
-          )}
-          {stop?.id === "about" && <AboutContent />}
+          {stop?.id === "about" && <AboutContent about={about} />}
           {stop?.id === "experience" && (
             <ExperienceContent experience={experience} />
           )}

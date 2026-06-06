@@ -6,6 +6,8 @@
       "name": "next-test",
       "dependencies": {
         "@base-ui/react": "^1.5.0",
+        "@betttercms/codegen": "^0.3.0",
+        "@betttercms/next": "^0.1.0",
         "@react-three/drei": "^10.7.7",
         "@react-three/fiber": "^9.6.1",
         "class-variance-authority": "^0.7.1",
@@ -102,6 +104,12 @@
     "@base-ui/react": ["@base-ui/react@1.5.0", "", { "dependencies": { "@babel/runtime": "^7.29.2", "@base-ui/utils": "0.2.9", "@floating-ui/react-dom": "^2.1.8", "@floating-ui/utils": "^0.2.11", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@date-fns/tz": "^1.2.0", "@types/react": "^17 || ^18 || ^19", "date-fns": "^4.0.0", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@date-fns/tz", "@types/react", "date-fns"] }, "sha512-z1gSAlced1yY+iM+mHDEtIkD8UI3Ebs52MuBPxvV6f5hRutk+xvCH/wuB7hDqDzK9JG5FoMz5nhrqtSs1wjt1A=="],
 
     "@base-ui/utils": ["@base-ui/utils@0.2.9", "", { "dependencies": { "@babel/runtime": "^7.29.2", "@floating-ui/utils": "^0.2.11", "reselect": "^5.1.1", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@types/react": "^17 || ^18 || ^19", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@types/react"] }, "sha512-x/PDDCYzoqPpjrdyb3VcyylTI2IjUXEtYDGi5foh7KsnmNJIIaVwA2GLgDH1dps1GgXiJbA60hM+AyuTfQzIvw=="],
+
+    "@betttercms/codegen": ["@betttercms/codegen@0.3.0", "", { "dependencies": { "@betttercms/types": "^1.0.17" }, "bin": { "bettercms-codegen": "dist/cli.js" } }, "sha512-iD5raO8Ck9U+okr5SjCnMHYLH2yfbRLRhTPZNnXaTH1je1YeDNYg62QhlbeR6l5N2klppFzwiiatmbC+GrFUBg=="],
+
+    "@betttercms/next": ["@betttercms/next@0.1.0", "", { "dependencies": { "@betttercms/types": "^1.0.17" }, "peerDependencies": { "next": ">=14", "react": ">=18" }, "optionalPeers": ["react"] }, "sha512-oUJcRNUH/IkzRaB3LZX2e9D1PhLQTI5B0mcTVupnHNA6mTt5Zl8u6FsP8xI9fHEhbTFzSLxg5JNRnGjDD8Y7ow=="],
+
+    "@betttercms/types": ["@betttercms/types@1.1.0", "", {}, "sha512-uAA7pDvOPepHvs2loXuStDxwTWP6y5e9cha6wfhcrgc6yK7o8h7pMjiaP4JjNrQTR09hmQDnG5zOkGDPBFpWAA=="],
 
     "@dimforge/rapier3d-compat": ["@dimforge/rapier3d-compat@0.12.0", "", {}, "sha512-uekIGetywIgopfD97oDL5PfeezkFpNhwlzlaEYNOA0N6ghdsOvh/HYjSMek5Q2O1PYvRSDFcqFVJl4r4ZBwOow=="],
 

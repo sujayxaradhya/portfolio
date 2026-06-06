@@ -4,7 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, useTexture } from "@react-three/drei";
 import { Suspense, useRef, type RefObject } from "react";
 import * as THREE from "three";
-import type { GlobeStop } from "@/data/stops";
+import type { StopData } from "@/lib/content";
 
 const ACCENT = "#00cc44";
 const GREEN_GLOW = "#00e64d";
@@ -91,9 +91,9 @@ function generateGraticulePositions(): Float32Array {
 }
 
 type GlobeProps = {
-  stops: GlobeStop[];
+  stops: StopData[];
   activeTitle: string | null;
-  onSelect: (stop: GlobeStop) => void;
+  onSelect: (stop: StopData) => void;
   progressRef: RefObject<number>;
   activeStop: number;
   totalStops: number;
@@ -256,9 +256,9 @@ function Marker({
   isActive,
   onSelect,
 }: {
-  stop: GlobeStop;
+  stop: StopData;
   isActive: boolean;
-  onSelect: (stop: GlobeStop) => void;
+  onSelect: (stop: StopData) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);

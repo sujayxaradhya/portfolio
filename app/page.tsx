@@ -1,81 +1,50 @@
-"use client";
+import { getHome, getAbout, getProjects, getExperience, getSkills, getStops } from "@/lib/content";
+import { HomeClient } from "@/components/home-client";
 
-import { useRef, useState, useCallback } from "react";
-import { DynamicGlobe } from "@/components/3d/dynamic-globe";
-import { ScrollController } from "@/components/scroll-controller";
-import { OverlayNav } from "@/components/overlay-nav";
-import { ContentPanel } from "@/components/content-panel";
-import { HeroOverlay } from "@/components/hero-overlay";
-import { SectionNavDots } from "@/components/section-nav-dots";
-import { stops, type GlobeStop } from "@/data/stops";
-import { projects } from "@/data/projects";
-import { experience } from "@/data/experience";
-import { skills } from "@/data/skills";
-import { links } from "@/data/links";
+export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const progressRef = useRef(0);
-  const [activeStop, setActiveStop] = useState<number>(0);
-  const [activeTitle, setActiveTitle] = useState<string | null>(null);
+export default async function Home() {
+  const [home, about, projects, experience, skills] = await Promise.all([
+    getHome(),
+    getAbout(),
+    getProjects(),
+    getExperience(),
+    getSkills(),
+  ]);
 
-  const handleStopChange = useCallback((stop: number) => {
-    setActiveStop(stop);
-    setActiveTitle(stops[stop]?.label ?? null);
-  }, []);
+  const links = home ?? {
+    name: "Your Name",
+    role: "Software Engineer",
+    tagline: "I build small, durable tools for the web.",
+    location: "Bengaluru, IN",
+    timezone: "IST (UTC+5:30)",
+    status: "Open to interesting work",
+    email: "hello@example.com",
+    github: "https://github.com/example",
+    linkedin: "https://linkedin.com/in/example",
+    x: "https://x.com/example",
+    website: "https://example.com",
+  };
 
-  const handleMarkerSelect = useCallback((stop: GlobeStop) => {
-    const idx = stops.findIndex((s) => s.id === stop.id);
-    if (idx >= 0) {
-      setActiveStop(idx);
-      setActiveTitle(stop.label);
-      progressRef.current = idx;
-    }
-  }, []);
+  const aboutData = about ?? {
+    paragraph_1:
+      "I'm a software engineer who likes working on small, durable things — the kind of software you can leave for six months and come back to without dread. Most of my work sits somewhere between the front-end and the database.",
+    paragraph_2:
+      "Lately I've been drawn to single-user tools, static sites, and quiet interfaces. I like the web when it loads quickly, reads clearly, and stays out of the way.",
+    paragraph_3:
+      "Outside of work, I read too much, walk long distances, and keep a list of projects I'll probably never finish.",
+  };
 
-  const scrollToStop = useCallback((n: number) => {
-    const clamped = Math.max(0, Math.min(stops.length - 1, n));
-    setActiveStop(clamped);
-    setActiveTitle(stops[clamped]?.label ?? null);
-    progressRef.current = clamped;
-  }, []);
+  const stops = getStops(projects);
 
   return (
-    <ScrollController
-      progressRef={progressRef}
-      totalStops={stops.length}
-      onStopChange={handleStopChange}
-    >
-      <div className="fixed inset-0">
-        <DynamicGlobe
-          stops={stops}
-          activeTitle={activeTitle}
-          onSelect={handleMarkerSelect}
-          progressRef={progressRef}
-          activeStop={activeStop}
-          totalStops={stops.length}
-        />
-        <OverlayNav
-          stops={stops}
-          activeStop={activeStop}
-          onNavigate={scrollToStop}
-          name={links.name}
-        />
-        <ContentPanel
-          activeStop={activeStop}
-          stops={stops}
-          projects={projects}
-          experience={experience}
-          skills={skills}
-          links={links}
-          onNavigate={scrollToStop}
-        />
-        <HeroOverlay activeStop={activeStop} />
-        <SectionNavDots
-          stops={stops}
-          activeStop={activeStop}
-          onNavigate={scrollToStop}
-        />
-      </div>
-    </ScrollController>
+    <HomeClient
+      stops={stops}
+      projects={projects}
+      experience={experience}
+      skills={skills}
+      links={links}
+      about={aboutData}
+    />
   );
 }
