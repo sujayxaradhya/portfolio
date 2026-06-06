@@ -1,8 +1,6 @@
 import { getHome, getAbout, getProjects, getExperience, getSkills, getStops } from "@/lib/content";
 import { HomeClient } from "@/components/home-client";
 
-export const dynamic = "force-dynamic";
-
 export default async function Home() {
   const [home, about, projects, experience, skills] = await Promise.all([
     getHome(),
