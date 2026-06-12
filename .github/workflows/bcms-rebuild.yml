@@ -40,8 +40,6 @@ jobs:
           node "$RUNNER_TEMP/fetch-content.mjs"
 
       - name: Install & build
-        env:
-          BETTERCMS_API_KEY: ${{ secrets.BCMS_API_KEY }}
         run: |
           # Detect the package manager from the committed lockfile so bun, pnpm, yarn
           # and npm projects all build — no assumption of a package-lock.json.
