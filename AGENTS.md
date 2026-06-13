@@ -1,17 +1,19 @@
-<!-- BEGIN:nextjs-agent-rules -->
 # BetterCMS — portfolio
 
 portfolio's content lives in BetterCMS. Read it through the Delivery API with a project `content:read` key. Pull field shapes live from the types endpoint below — don't hardcode them, the schema can change.
 
 ## Auth
-Send `X-API-Key: <key>` on every read. Mint a long-lived `content:read` key (reads PUBLISHED content, never expires) at https://api.bettercms.ai/api/v1/projects/NRU4Vf7aJC6C6P32rzJJv/api-keys. For drafts, mint a `content:read:draft` key (force-expired to ≤1h), then publish and switch to the long-lived key.
+Send `X-API-Key: <key>` on every read. Mint a long-lived `content:read` key (reads PUBLISHED content, never expires) at https://api.bettercms.ai/api/v1/projects/2b57zXnvudYA6GWXiHgkP/api-keys. For drafts, mint a `content:read:draft` key (force-expired to ≤1h), then publish and switch to the long-lived key.
 
 ## Content types
 - `experience` — page (singleton)
+- `experience` — model
 - `home` — page (singleton)
 - `home` — model
-- `projects` — page (dynamic)
+- `projects` — page (singleton)
+- `projects` — model
 - `skills` — page (singleton)
+- `skills` — model
 
 ## Reading (Delivery API · base `https://api.bettercms.ai/api/v1/delivery/sujay`)
 - Page: `GET .../content/{slug}`
@@ -49,7 +51,15 @@ Example entry `fields` (a `sections` zone field + a `tags` primitive array):
 }
 ```
 
-## This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
-<!-- END:nextjs-agent-rules -->
+## Live Preview bindings (makes the site visually editable)
+Generate a bindings module alongside the types and spread it so the dashboard's Live Preview can edit each field in place:
+```bash
+BETTERCMS_API_KEY=<key> npx bettercms-codegen --api-url https://api.bettercms.ai/api/v1 --bindings-out src/bettercms.bindings.generated.ts
+```
+```tsx
+import { bcms } from "./bettercms.bindings.generated";
+// scalar:        <h1 {...bcms.<model>.<field>}>{entry.fields.field}</h1>
+// list item:     <article {...bcms.<model>.<arr>.$(i)}><h3 {...bcms.<model>.<arr>.<sub>(i)}>{item.sub}</h3></article>
+// primitive list:<li {...bcms.<model>.<arr>.value(i)}>{tag}</li>
+```
+Bindings emit attributes only when the platform builds with `BCMS_ANNOTATE` (preview builds); production ships nothing extra, so spreading them is always safe.

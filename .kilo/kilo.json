@@ -13,9 +13,16 @@
       }
     },
     "bettercms": {
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@betttercms/mcp"],
-      "env": { "BETTERCMS_API_URL": "https://api.bettercms.ai" }
+      "args": [
+        "-y",
+        "@betttercms/mcp"
+      ],
+      "env": {
+        "BETTERCMS_API_URL": "https://api.bettercms.ai"
+      },
+      "enabled": true
     }
   }
 }

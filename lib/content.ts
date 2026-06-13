@@ -21,6 +21,13 @@ export type RoleData = {
   scope: string;
 };
 
+export type CertificationData = {
+  name: string;
+  issuer: string;
+  year: string;
+  url: string;
+};
+
 export type LinksData = {
   name: string;
   role: string;
@@ -114,6 +121,7 @@ export type SiteContent = {
   about: AboutData;
   projects: ProjectData[];
   experience: RoleData[];
+  certifications: CertificationData[];
   skills: Record<string, readonly string[]>;
   skillsHeading: SkillsHeading;
   stops: StopData[];
@@ -199,6 +207,17 @@ export async function fetchAllContent(
     }));
   }
 
+  let certifications: CertificationData[] = [];
+  if (experienceEntry) {
+    const items = experienceEntry.fields.certifications?.repeatable ?? [];
+    certifications = items.map((c) => ({
+      name: c.name,
+      issuer: c.issuer ?? "",
+      year: c.year ?? "",
+      url: c.url ?? "",
+    }));
+  }
+
   let skills: Record<string, readonly string[]> = {};
   let skillsHeading: SkillsHeading = { title: "Skills", subtitle: "What I work with" };
   if (skillsEntry) {
@@ -214,7 +233,7 @@ export async function fetchAllContent(
 
   const stops = getStops(projects);
 
-  return { links, about, projects, experience, skills, skillsHeading, stops };
+  return { links, about, projects, experience, certifications, skills, skillsHeading, stops };
 }
 
 export function getStops(projects: ProjectData[]): StopData[] {

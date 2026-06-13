@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { bcms } from "@/bettercms.bindings.generated";
 import type { LinksData } from "@/lib/content";
 
 type HeroOverlayProps = {
@@ -24,18 +25,18 @@ export function HeroOverlay({ activeStop, links }: HeroOverlayProps) {
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Portfolio · {new Date().getFullYear()}
         </p>
-        <h1 className="font-display text-[clamp(3.25rem,9vw,7.5rem)] leading-[0.95] tracking-[-0.02em] text-balance">
+        <h1 className="font-display text-[clamp(3.25rem,9vw,7.5rem)] leading-[0.95] tracking-[-0.02em] text-balance" {...bcms.home.identity.name}>
           {links.name}
         </h1>
         <p className="max-w-2xl font-display text-xl leading-snug text-pretty text-muted-foreground italic md:text-2xl">
-          {links.role} — {links.tagline}
+          <span {...bcms.home.identity.role}>{links.role}</span> — <span {...bcms.home.identity.tagline}>{links.tagline}</span>
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono text-xs text-muted-foreground">
-          <span>{links.location}</span>
+          <span {...bcms.home.identity.location}>{links.location}</span>
           <span aria-hidden>·</span>
-          <span>{links.timezone}</span>
+          <span {...bcms.home.identity.timezone}>{links.timezone}</span>
           <span aria-hidden>·</span>
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex items-center gap-2" {...bcms.home.identity.status}>
             <span className="inline-block size-1.5 rounded-full bg-accent" />
             {links.status}
           </span>

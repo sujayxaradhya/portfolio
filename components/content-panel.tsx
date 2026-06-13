@@ -1,17 +1,19 @@
 "use client";
 
-import { ArrowUpRight, CodeXml, MapPin } from "lucide-react";
+import { ArrowUpRight, CodeXml, MapPin, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/link-button";
 import { CopyEmailButton } from "@/components/copy-email-button";
 import { cn } from "@/lib/utils";
-import type { ProjectData, RoleData, LinksData, StopData, AboutData, SkillsHeading } from "@/lib/content";
+import { bcms } from "@/bettercms.bindings.generated";
+import type { ProjectData, RoleData, CertificationData, LinksData, StopData, AboutData, SkillsHeading } from "@/lib/content";
 
 type ContentPanelProps = {
   activeStop: number;
   stops: readonly StopData[];
   projects: ProjectData[];
   experience: RoleData[];
+  certifications: CertificationData[];
   skills: Record<string, readonly string[]>;
   skillsHeading: SkillsHeading;
   links: LinksData;
@@ -19,30 +21,31 @@ type ContentPanelProps = {
   onNavigate: (n: number) => void;
 };
 
-function ProjectContent({ project }: { project: ProjectData }) {
+function ProjectContent({ project, index }: { project: ProjectData; index: number }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" {...bcms.projects.projects.$(index)}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h3 className="font-display text-2xl tracking-tight md:text-3xl">
+        <h3 className="font-display text-2xl tracking-tight md:text-3xl" {...bcms.projects.projects.title(index)}>
           {project.title}
         </h3>
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground" {...bcms.projects.projects.year(index)}>
           {project.year}
         </span>
       </div>
-      <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
+      <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.15em] text-muted-foreground" {...bcms.projects.projects.place(index)}>
         <MapPin className="text-muted-foreground/70" />
         {project.place}
       </div>
-      <p className="text-base leading-relaxed text-pretty text-foreground/80">
+      <p className="text-base leading-relaxed text-pretty text-foreground/80" {...bcms.projects.projects.description(index)}>
         {project.description}
       </p>
       <div className="flex flex-wrap items-center gap-1.5">
-        {project.stack.map((s) => (
+        {project.stack.map((s, j) => (
           <Badge
             key={s}
             variant="secondary"
             className="font-mono text-[10px] font-normal"
+            {...bcms.projects.projects.stack.value(index, j)}
           >
             {s}
           </Badge>
@@ -56,6 +59,7 @@ function ProjectContent({ project }: { project: ProjectData }) {
             href={project.href}
             target="_blank"
             rel="noopener noreferrer"
+            {...bcms.projects.projects.href(index)}
           >
             <ArrowUpRight data-icon="inline-start" />
             Live
@@ -68,6 +72,7 @@ function ProjectContent({ project }: { project: ProjectData }) {
             href={project.repo}
             target="_blank"
             rel="noopener noreferrer"
+            {...bcms.projects.projects.repo(index)}
           >
             <CodeXml data-icon="inline-start" />
             Source
@@ -81,9 +86,9 @@ function ProjectContent({ project }: { project: ProjectData }) {
 function AboutContent({ about }: { about: AboutData }) {
   return (
     <div className="flex flex-col gap-5 text-base leading-relaxed text-pretty text-foreground/85 md:text-lg">
-      <p>{about.paragraph_1}</p>
-      <p>{about.paragraph_2}</p>
-      <p>{about.paragraph_3}</p>
+      <p {...bcms.home.about.paragraph_1}>{about.paragraph_1}</p>
+      <p {...bcms.home.about.paragraph_2}>{about.paragraph_2}</p>
+      <p {...bcms.home.about.paragraph_3}>{about.paragraph_3}</p>
     </div>
   );
 }
@@ -91,27 +96,28 @@ function AboutContent({ about }: { about: AboutData }) {
 function ExperienceContent({ experience }: { experience: RoleData[] }) {
   return (
     <ol className="relative flex flex-col gap-0 border-l border-rule pl-6 md:pl-8">
-      {experience.map((r) => (
+      {experience.map((r, i) => (
         <li
           key={`${r.company}-${r.start}`}
           className="relative flex flex-col gap-1 py-5 md:py-6"
+          {...bcms.experience.roles.$(i)}
         >
           <span
             aria-hidden
             className="absolute -left-[5px] top-7 size-2.5 rounded-full bg-background ring-1 ring-rule"
           />
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h3 className="font-display text-xl tracking-tight md:text-2xl">
+            <h3 className="font-display text-xl tracking-tight md:text-2xl" {...bcms.experience.roles.role(i)}>
               {r.role}
             </h3>
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-xs text-muted-foreground" {...bcms.experience.roles.company(i)}>
               · {r.company}
             </span>
           </div>
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-            {r.start} – {r.end}
+            <span {...bcms.experience.roles.start(i)}>{r.start}</span> – <span {...bcms.experience.roles.end(i)}>{r.end}</span>
           </span>
-          <p className="mt-2 max-w-2xl text-base leading-relaxed text-pretty text-foreground/85">
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-pretty text-foreground/85" {...bcms.experience.roles.scope(i)}>
             {r.scope}
           </p>
         </li>
@@ -120,19 +126,56 @@ function ExperienceContent({ experience }: { experience: RoleData[] }) {
   );
 }
 
+function CertificationsContent({ certifications }: { certifications: CertificationData[] }) {
+  if (certifications.length === 0) return null;
+  return (
+    <ul className="flex flex-col gap-3">
+      {certifications.map((c, i) => (
+        <li
+          key={`${c.name}-${c.issuer}`}
+          className="flex flex-col gap-0.5"
+          {...bcms.experience.certifications.$(i)}
+        >
+          <div className="flex items-center gap-2">
+            <Award className="size-4 text-muted-foreground/70 shrink-0" />
+            <span className="font-display text-base tracking-tight" {...bcms.experience.certifications.name(i)}>
+              {c.name}
+            </span>
+            {c.issuer && (
+              <span className="font-mono text-xs text-muted-foreground" {...bcms.experience.certifications.issuer(i)}>
+                · {c.issuer}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground ml-6">
+            {c.year && <span {...bcms.experience.certifications.year(i)}>{c.year}</span>}
+            {c.url && (
+              <LinkButton variant="link" size="sm" href={c.url} target="_blank" rel="noopener noreferrer">
+                <ArrowUpRight data-icon="inline-start" />
+                Link
+              </LinkButton>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function SkillsContent({ skills }: { skills: Record<string, readonly string[]> }) {
+  const entries = Object.entries(skills);
   return (
     <dl className="grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-2">
-      {Object.entries(skills).map(([category, items]) => (
-        <div key={category} className="flex flex-col gap-2">
-          <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+      {entries.map(([category, items], i) => (
+        <div key={category} className="flex flex-col gap-2" {...bcms.skills.categories.$(i)}>
+          <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground" {...bcms.skills.categories.category_name(i)}>
             {category}
           </dt>
           <dd className="flex flex-wrap gap-x-1.5 gap-y-1 text-base leading-relaxed text-foreground/90">
-            {items.map((s, i) => (
-              <span key={s}>
+            {items.map((s, j) => (
+              <span key={s} {...bcms.skills.categories.skills.value(i, j)}>
                 {s}
-                {i < items.length - 1 && (
+                {j < items.length - 1 && (
                   <span className="text-muted-foreground/40" aria-hidden>,</span>
                 )}
               </span>
@@ -155,13 +198,14 @@ function ContactContent({ links }: { links: LinksData }) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
-        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground" {...bcms.home.contact.email}>
           Email
         </span>
         <div className="flex flex-wrap items-center gap-4">
           <a
             href={`mailto:${links.email}`}
             className="font-display text-2xl tracking-tight hover:text-accent md:text-4xl text-balance"
+            {...bcms.home.contact.email}
           >
             {links.email}
           </a>
@@ -197,6 +241,7 @@ export function ContentPanel({
   stops,
   projects,
   experience,
+  certifications,
   skills,
   skillsHeading,
   links,
@@ -225,6 +270,13 @@ export function ContentPanel({
   };
 
   const header = getHeader();
+
+  const headerBinding = stop?.id === "skills"
+    ? { ...bcms.skills.heading.title }
+    : {};
+  const eyebrowBinding = stop?.id === "skills"
+    ? { ...bcms.skills.heading.subtitle }
+    : {};
 
   return (
     <div
@@ -259,22 +311,25 @@ export function ContentPanel({
             {header.eyebrow && (
               <>
                 <span aria-hidden>·</span>
-                <span>{header.eyebrow}</span>
+                <span {...eyebrowBinding}>{header.eyebrow}</span>
               </>
             )}
           </div>
-          <h2 className="font-display text-3xl leading-[1.05] tracking-tight text-balance md:text-4xl">
+          <h2 className="font-display text-3xl leading-[1.05] tracking-tight text-balance md:text-4xl" {...headerBinding}>
             {header.title}
           </h2>
         </header>
 
         <div className="mt-6 flex flex-col gap-6">
           {stop?.project && (
-            <ProjectContent project={stop.project} />
+            <ProjectContent project={stop.project} index={projects.findIndex(p => p.title === stop.project!.title)} />
           )}
           {stop?.id === "about" && <AboutContent about={about} />}
           {stop?.id === "experience" && (
-            <ExperienceContent experience={experience} />
+            <>
+              <ExperienceContent experience={experience} />
+              <CertificationsContent certifications={certifications} />
+            </>
           )}
           {stop?.id === "skills" && <SkillsContent skills={skills} />}
           {stop?.id === "contact" && <ContactContent links={links} />}

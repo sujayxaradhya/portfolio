@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { bcms } from "@/bettercms.bindings.generated";
 
 type NavStop = {
   id: string;
@@ -22,6 +23,7 @@ export function OverlayNav({ stops, activeStop, onNavigate, name }: OverlayNavPr
       <button
         onClick={() => onNavigate(0)}
         className="font-display text-base font-medium tracking-tight text-foreground transition-opacity hover:opacity-70"
+        {...bcms.home.identity.name}
       >
         {name}
       </button>

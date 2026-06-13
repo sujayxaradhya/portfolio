@@ -9,9 +9,10 @@ import { HeroOverlay } from "@/components/hero-overlay";
 import { SectionNavDots } from "@/components/section-nav-dots";
 import { useLiveContent } from "@/components/use-live-content";
 import type { SiteContent, StopData } from "@/lib/content";
+import { bcms } from "@/bettercms.bindings.generated";
 
 export function HomeClient(initial: SiteContent) {
-  const { stops, projects, experience, skills, skillsHeading, links, about } = useLiveContent(initial);
+  const { stops, projects, experience, certifications, skills, skillsHeading, links, about } = useLiveContent(initial);
   const progressRef = useRef(0);
   const [activeStop, setActiveStop] = useState<number>(0);
   const [activeTitle, setActiveTitle] = useState<string | null>(null);
@@ -63,6 +64,7 @@ export function HomeClient(initial: SiteContent) {
           stops={stops}
           projects={projects}
           experience={experience}
+          certifications={certifications}
           skills={skills}
           skillsHeading={skillsHeading}
           links={links}
