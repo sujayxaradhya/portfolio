@@ -172,9 +172,9 @@ export async function fetchAllContent(
 
     if (aboutZone?.paragraph_1) {
       about = {
-        paragraph_1: aboutZone.paragraph_1,
-        paragraph_2: aboutZone.paragraph_2 ?? "",
-        paragraph_3: aboutZone.paragraph_3 ?? "",
+        paragraph_1: richTextToPlain(aboutZone.paragraph_1 as RichText | string),
+        paragraph_2: richTextToPlain(aboutZone.paragraph_2 as RichText | string),
+        paragraph_3: richTextToPlain(aboutZone.paragraph_3 as RichText | string),
       };
     }
   }
@@ -203,7 +203,7 @@ export async function fetchAllContent(
       company: r.company,
       start: r.start ?? "",
       end: r.end ?? "",
-      scope: r.scope ?? "",
+      scope: richTextToPlain(r.scope as RichText | string),
     }));
   }
 
